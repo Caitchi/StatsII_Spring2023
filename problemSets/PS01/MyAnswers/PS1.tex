@@ -1,0 +1,179 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{graphicx,textcomp}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{fullpage}
+\usepackage{color}
+\usepackage[reqno]{amsmath}
+\usepackage{amsthm}
+\usepackage{fancyvrb}
+\usepackage{amssymb,enumerate}
+\usepackage[all]{xy}
+\usepackage{endnotes}
+\usepackage{lscape}
+\newtheorem{com}{Comment}
+\usepackage{float}
+\usepackage{hyperref}
+\newtheorem{lem} {Lemma}
+\newtheorem{prop}{Proposition}
+\newtheorem{thm}{Theorem}
+\newtheorem{defn}{Definition}
+\newtheorem{cor}{Corollary}
+\newtheorem{obs}{Observation}
+\usepackage[compact]{titlesec}
+\usepackage{dcolumn}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usepackage{multirow}
+\usepackage{xcolor}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+\definecolor{light-gray}{gray}{0.65}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=mystyle}
+\newcommand{\Sref}[1]{Section~\ref{#1}}
+\newtheorem{hyp}{Hypothesis}
+
+\title{Problem Set 1: Applied Stats II}
+\date{Due: February 19, 2023}
+\author{Caitlín Cooney}
+
+
+\begin{document}
+	\maketitle
+	\vspace{.25cm}
+\section*{Question 1} 
+\vspace{.25cm}
+
+
+\noindent Using \texttt{R} generate 1,000 Cauchy random variables (\texttt{rcauchy(1000, location = 0, scale = 1)}) and perform the test (remember, use the same seed, something like \texttt{set.seed(123)}, whenever you're generating your own data).\\
+
+\begin{lstlisting}[language=R]
+	set.seed(123)data <- (rcauchy(1000, location = 0, scale = 1)) \end{lstlisting}
+	
+\noindent  Write an \texttt{R} function that implements the Kolmogorov-Smirnov test where the reference distribution is normal. \\
+	
+
+\begin{lstlisting}[language=R]
+ 	kolsmir.test <- function(data) { 
+		
+		# Create empirical distribution of observed data  
+		ECDF <- ecdf(data)  
+		empiricalCDF <- ECDF(data)    
+		
+		# Generate test statistic  
+		D <- max(abs(empiricalCDF - pnorm(data)))    
+		
+		# Calculate p-value  
+		p.value <- 1 - pnorm(sqrt(length(data)) * D)    
+		
+		return(list(D = D, p.value = p.value))
+	}\end{lstlisting}
+
+
+\noindent State your null and alternate hypotheses: \\
+
+\indent H0: The data comes from the specified distribution.\\
+
+\indent H1: At least one value does not match the specified distribution.\\
+
+
+\begin{lstlisting}[language=R]
+	# Run the function
+	kolsmir.test(data) \end{lstlisting}
+
+\newpage
+\noindent The results are: \begin{verbatim}
+	$D
+	[1] 0.1347281
+	$p.value
+	[1] 1.019963e-0}\end{verbatim}
+
+\noindent  As D is not greater than the critical value, we fail to reject the null hypothesis that  the data comes from the specified distribution (or in other words, that P = P0).\\
+
+\vspace{3in}
+
+\newpage
+
+\section*{Question 2}
+\noindent Estimate an OLS regression in \texttt{R} that uses the Newton-Raphson algorithm (specifically \texttt{BFGS}, which is a quasi-Newton method).  
+\vspace{.5cm}
+
+
+\begin{lstlisting}[language=R]
+set.seed (123)
+data <- data.frame(x = runif(200, 1, 10))
+data$y <- 0 + 2.75*data$x + rnorm(200, 0, 1.5) \end{lstlisting}
+
+\begin{lstlisting}[language=R]
+	linear.lik <- function(theta, y, X) {  
+		n <- nrow(X)  
+		k <- ncol(X)  
+		beta <- theta [1:k]  
+		sigma2<- theta [k+1] ^2  
+		e <- y-X%*%beta  
+		logl<- -.5*n*log( 2*pi )-.5*n*log(sigma2)-((t(e)%*%e)/(2*sigma2))
+		return(-logl)
+	}
+	 \end{lstlisting}
+		
+\noindent Find parameters that specify the point. \\
+
+
+\begin{lstlisting}[language=R]
+	linear.MLE <- optim(fn = linear.lik, par = c(1, 1, 1), 
+									hessian = TRUE, y = data$y , X = cbind(1, data$x),  
+									method = "BFGS")
+	
+	linear.MLE$par\end{lstlisting}
+
+
+\noindent The results show: \\
+
+\begin{verbatim}
+[1]  0.1398324  2.7265559 -1.4390716 \end{verbatim}
+
+
+\noindent Show that you get the equivalent results to using \texttt{lm}. \\
+
+\begin{lstlisting}[language=R]
+	summary(lm(y~x, data)) \end{lstlisting}
+
+\noindent The results show: \\
+
+ \begin{verbatim} 
+ 	Coefficients:            
+ 	Estimate Std. Error t value Pr(>|t|)    
+ 	(Intercept)  	0.13919    0.25276   0.551    0.582   
+ 	x            			2.72670    0.04159  65.564   <2e-16 ***\end{verbatim}
+ 
+ \noindent As expected, the estimates for \texttt{lm} are the same as the parameters found using the Newton-Raphson algorithm, because ordinary least squares is equivalent to maximum likelihood for a linear model, so it makes sense that \texttt{lm} would give us the same answers. \\
+ 
+
+\end{document}
