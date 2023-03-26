@@ -65,40 +65,11 @@ unord_model <- multinom(GDPWdiff ~ OIL + REG, dat)
 summary(unord_model)
 exp(coef(unord_model))
 
-# Interpretation: 
-# For a one-unit increase in OIL, the log-odds of being in the positive category 
-# increase by 4.576321 units, holding all other variables constant. 
-# Similarly, for a one-unit increase in REG, the log-odds of being in the positive category
-# increase by 1.769007 units, holding all other variables constant. 
-# The intercept term (4.533759) represents the log-odds of being in the reference category.
-
-# For a one-unit increase in OIL, the log-odds of being in the negative category 
-# increase by 4.783968 units, holding all other variables constant. 
-# For a one-unit increase in REG, the log-odds of being in the negative category 
-# increase by 1.379282 units, holding all other variables constant. 
-# The intercept term (3.805370) represents the log-odds of being in the reference category.
-
 # get z and p values
 
 z <- summary(unord_model)$coefficients/summary(unord_model)$standard.errors
 (p <- (1 - pnorm(abs(z), 0, 1)) * 2)
 
-# The results suggest that the predictor variable OIL has a statistically significant 
-# effect on both the positive and negative categories. 
-# The p-values for OIL are 0.5062612 and 0.4871792 for the positive and negative 
-# categories, respectively. Since both p-values are greater than the common threshold 
-# of 0.05, we cannot reject the null hypothesis that the coefficient for OIL is zero 
-# in either category.
-
-# The predictor variable REG, on the other hand, appears to have a statistically 
-# significant effect only on the positive category. The p-value for REG is 0.02109459 
-# for the positive category, but it is 0.07276308 for the negative category. 
-# Since the p-value for the positive category is less than 0.05, 
-# we can reject the null hypothesis that the coefficient for REG is zero in 
-# the positive category, and conclude that REG has a statistically significant 
-# effect on the odds of being in the positive category compared to the reference category. 
-# However, we cannot reject the null hypothesis that the coefficient for REG is 
-# zero in the negative category.
 
 # we can use predicted probabilities to help interpret our coefficients
 pp <- data.frame(fitted(unord_model))
